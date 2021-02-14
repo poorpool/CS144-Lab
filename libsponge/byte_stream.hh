@@ -11,7 +11,12 @@
 class ByteStream {
   private:
     // Your code here -- add private members as necessary.
-
+    std::string bytes;  // 左出右进
+    size_t cap;         // 容量
+    size_t used_len;    // bytes 长度
+    bool is_end;
+    size_t has_writen;  // 已经写了的
+    size_t has_read;    // 已经读了的
     // Hint: This doesn't need to be a sophisticated data structure at
     // all, but if any of your tests are taking longer than a second,
     // that's a sign that you probably want to keep exploring
