@@ -3,17 +3,29 @@
 
 #include "byte_stream.hh"
 
+#include <algorithm>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
 //! possibly overlapping) into an in-order byte stream.
 class StreamReassembler {
   private:
     // Your code here -- add private members as necessary.
-
-    ByteStream _output;  //!< The reassembled in-order byte stream
-    size_t _capacity;    //!< The maximum number of bytes
+    struct Segment {
+        size_t start_byte;
+        size_t end_byte;
+        std::string content;
+        bool operator<(const Segment &segment) const { return start_byte < segment.start_byte; }
+    };
+    ByteStream _output;              //!< The reassembled in-order byte stream
+    size_t _capacity;                //!< The maximum number of bytes
+    std::vector<Segment> _segments;  // 未重排的不相交的字符串
+    size_t _segments_size;           // 未重排的字符串的 size
+    size_t _first_unassembled;
+    bool _is_eof;
+    size_t _eof_index;
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
