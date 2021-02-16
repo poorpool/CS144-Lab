@@ -69,6 +69,7 @@ void TCPSender::fill_window() {
 void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_size) {
     uint64_t absolute_ackno = unwrap(ackno, _isn, _ackno);
     _window_size = window_size;
+    if (absolute_ackno > _next_seqno)   return ;
     if (absolute_ackno <= _ackno)    return ;
     _ackno = absolute_ackno;
     while (!_outstanding_segments.empty()) {
