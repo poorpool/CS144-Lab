@@ -24,6 +24,15 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
     } else {
         if (!_has_syn)
             return;
+        if (seg.payload().size() != 0) {
+            uint64_t l_end = unwrap(seg.header().seqno - 1, _isn, _reassembler.stream_out().bytes_written());
+            uint64_t r_end = l_end + seg.payload().size() - 1;
+            uint64_t l_window = _reassembler.stream_out().bytes_written();
+            // 压根就不交
+            if (r_end < l_window || l_end + 1 > l_window + window_size()) {
+                return ;
+            }
+        }
         _reassembler.push_substring(seg.payload().copy(),
                                     unwrap(seg.header().seqno - 1, _isn, _reassembler.stream_out().bytes_written()),
                                     seg.header().fin);

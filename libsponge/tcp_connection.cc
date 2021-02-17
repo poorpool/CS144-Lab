@@ -12,9 +12,7 @@ void DUMMY_CODE(Targs &&... /* unused */) {}
 
 using namespace std;
 
-#if true
-#define dbg(fmt, ...) do {printf(fmt"\r",  ##__VA_ARGS__);}while(0)
-#endif
+
 
 size_t TCPConnection::remaining_outbound_capacity() const { return _sender.stream_in().remaining_capacity();}
 
@@ -25,7 +23,6 @@ size_t TCPConnection::unassembled_bytes() const { return _receiver.unassembled_b
 size_t TCPConnection::time_since_last_segment_received() const { return _time_since_last_segment_received; }
 
 void TCPConnection::segment_received(const TCPSegment &seg) {
-    dbg("segment received\n");
     if (!_active)   return ;
     _time_since_last_segment_received = 0;
     if (seg.header().rst) {
@@ -61,12 +58,11 @@ void TCPConnection::tick(const size_t ms_since_last_tick) {
 }
 
 void TCPConnection::end_input_stream() {
-    _receiver.stream_out().end_input();
+    _sender.stream_in().end_input();
     push_out_segments();
 }
 
 void TCPConnection::connect() {
-    dbg("connect\n");
     push_out_segments();
 }
 
