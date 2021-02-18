@@ -26,7 +26,6 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
     if (!_active)   return ;
     _time_since_last_segment_received = 0;
     if (seg.header().syn) {
-        printf("setting syn!\n");
         _get_syn = true;
     }
     if (seg.header().rst) {
@@ -101,8 +100,6 @@ void TCPConnection::unclean_shutdown(bool send_rst) {
 }
 
 void TCPConnection::push_out_segments() {
-    // 不主动开始发送 syn
-
     TCPSegment tcpSegment;
     while (!_sender.segments_out().empty()) {
         tcpSegment = _sender.segments_out().front();
