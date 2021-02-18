@@ -33,6 +33,10 @@ class TCPConnection {
 
     void maybe_clean_shutdown();
 
+    bool is_syn_closed(); // 最初的状态，不是关闭了
+
+    bool _get_syn{false}; // 接收到 syn
+
   public:
     //! \name "Input" interface for the writer
     //!@{

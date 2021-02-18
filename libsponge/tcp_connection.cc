@@ -25,6 +25,10 @@ size_t TCPConnection::time_since_last_segment_received() const { return _time_si
 void TCPConnection::segment_received(const TCPSegment &seg) {
     if (!_active)   return ;
     _time_since_last_segment_received = 0;
+    if (seg.header().syn) {
+        printf("setting syn!\n");
+        _get_syn = true;
+    }
     if (seg.header().rst) {
         unclean_shutdown(false);
         return ;
@@ -33,6 +37,9 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
     if (seg.header().ack)
         _sender.ack_received(seg.header().ackno, seg.header().win);
     if (seg.length_in_sequence_space()) {
+        if (_get_syn) {
+            _sender.fill_window();
+        }
         if (_sender.segments_out().empty()) _sender.send_empty_segment();
         push_out_segments();
     }
@@ -42,6 +49,9 @@ bool TCPConnection::active() const { return _active; }
 
 size_t TCPConnection::write(const string &data) {
     size_t ret = _sender.stream_in().write(data);
+    if (_get_syn) {
+        _sender.fill_window();
+    }
     push_out_segments();
     return ret;
 }
@@ -54,21 +64,34 @@ void TCPConnection::tick(const size_t ms_since_last_tick) {
     if (_sender.consecutive_retransmissions() > TCPConfig::MAX_RETX_ATTEMPTS) {
         unclean_shutdown(true);
     }
+    if (_get_syn) {
+        _sender.fill_window();
+    }
     push_out_segments();
 }
 
 void TCPConnection::end_input_stream() {
     _sender.stream_in().end_input();
+    if (_get_syn) {
+        _sender.fill_window();
+    }
     push_out_segments();
 }
 
 void TCPConnection::connect() {
+    _get_syn = true;
+    if (_get_syn) {
+        _sender.fill_window();
+    }
     push_out_segments();
 }
 
 void TCPConnection::unclean_shutdown(bool send_rst) {
     if (send_rst) {
         _need_rst = true;
+        if (_get_syn) {
+            _sender.fill_window();
+        }
         if (_sender.segments_out().empty()) _sender.send_empty_segment();
         push_out_segments();
     }
@@ -78,7 +101,8 @@ void TCPConnection::unclean_shutdown(bool send_rst) {
 }
 
 void TCPConnection::push_out_segments() {
-    _sender.fill_window();
+    // 不主动开始发送 syn
+
     TCPSegment tcpSegment;
     while (!_sender.segments_out().empty()) {
         tcpSegment = _sender.segments_out().front();
@@ -117,4 +141,8 @@ TCPConnection::~TCPConnection() {
     } catch (const exception &e) {
         std::cerr << "Exception destructing TCP FSM: " << e.what() << std::endl;
     }
+}
+
+bool TCPConnection::is_syn_closed() {
+    return _sender.next_seqno_absolute() == 0;
 }
