@@ -30,7 +30,7 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
             uint64_t l_window = _reassembler.stream_out().bytes_written();
             // 压根就不交
             if (r_end < l_window || l_end + 1 > l_window + window_size()) {
-                return ;
+                return;
             }
         }
         _reassembler.push_substring(seg.payload().copy(),

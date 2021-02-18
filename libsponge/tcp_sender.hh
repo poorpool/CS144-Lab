@@ -37,28 +37,19 @@ class TCPSender {
         unsigned int _retransmission_timeout;
         unsigned int _time_elapsed;
         bool _has_start;
+
       public:
-        RetransmissionTimer() :_retransmission_timeout(0),_time_elapsed(0), _has_start(false) {}
-        void setTimeout(unsigned int timeout) {
-            _retransmission_timeout = timeout;
-        }
-        bool has_start() {return _has_start;}
+        RetransmissionTimer() : _retransmission_timeout(0), _time_elapsed(0), _has_start(false) {}
+        void setTimeout(unsigned int timeout) { _retransmission_timeout = timeout; }
+        bool has_start() { return _has_start; }
         void start() {
             _has_start = true;
             _time_elapsed = 0;
         }
-        void double_timeout() {
-            _retransmission_timeout *= 2;
-        }
-        void stop() {
-            _has_start = false;
-        }
-        void tick(unsigned int time_elapsed) {
-            _time_elapsed += time_elapsed;
-        }
-        bool is_timeout() {
-            return _has_start && _time_elapsed >= _retransmission_timeout;
-        }
+        void double_timeout() { _retransmission_timeout *= 2; }
+        void stop() { _has_start = false; }
+        void tick(unsigned int time_elapsed) { _time_elapsed += time_elapsed; }
+        bool is_timeout() { return _has_start && _time_elapsed >= _retransmission_timeout; }
     };
     RetransmissionTimer _retransmission_timer{};
     uint16_t _window_size{0};

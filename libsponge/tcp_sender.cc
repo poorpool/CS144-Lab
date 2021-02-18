@@ -10,7 +10,7 @@
 // automated checks run by `make check_lab3`.
 
 template <typename... Targs>
-void DUMMY_CODE(Targs &&... /* unused */) {}
+void DUMMY_CODE(Targs &&.../* unused */) {}
 
 using namespace std;
 
@@ -43,15 +43,17 @@ void TCPSender::fill_window() {
         uint16_t window_size = _window_size ? _window_size : 1;
         uint64_t remain_size;
         while (!_fin) {
-            remain_size = window_size - _next_seqno + _ackno; // 减去发出去的
-            if (remain_size == 0)   break;
+            remain_size = window_size - _next_seqno + _ackno;  // 减去发出去的
+            if (remain_size == 0)
+                break;
             string read_string = _stream.read(min(remain_size, TCPConfig::MAX_PAYLOAD_SIZE));
             tcpSegment.payload() = Buffer(std::move(read_string));
             if (_stream.eof() && tcpSegment.length_in_sequence_space() < remain_size) {
                 _fin = true;
                 tcpSegment.header().fin = true;
             }
-            if (tcpSegment.length_in_sequence_space() == 0) break;
+            if (tcpSegment.length_in_sequence_space() == 0)
+                break;
             tcpSegment.header().seqno = next_seqno();
             _next_seqno += tcpSegment.length_in_sequence_space();
             _segments_out.push(tcpSegment);
@@ -69,8 +71,10 @@ void TCPSender::fill_window() {
 void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_size) {
     uint64_t absolute_ackno = unwrap(ackno, _isn, _ackno);
     _window_size = window_size;
-    if (absolute_ackno > _next_seqno)   return ;
-    if (absolute_ackno <= _ackno)    return ;
+    if (absolute_ackno > _next_seqno)
+        return;
+    if (absolute_ackno <= _ackno)
+        return;
     _ackno = absolute_ackno;
     while (!_outstanding_segments.empty()) {
         TCPSegment tcpSegment = _outstanding_segments.front();
@@ -95,7 +99,7 @@ void TCPSender::tick(const size_t ms_since_last_tick) {
     if (_retransmission_timer.is_timeout() && !_outstanding_segments.empty()) {
         TCPSegment tcpSegment = _outstanding_segments.front();
         _segments_out.push(tcpSegment);
-        if (tcpSegment.header().syn || _window_size) { // 第一个死活收不到也要加倍
+        if (tcpSegment.header().syn || _window_size) {  // 第一个死活收不到也要加倍
             _consecutive_retransmissions++;
             _retransmission_timer.double_timeout();
             _retransmission_timer.start();
