@@ -14,7 +14,7 @@
 // You will need to add private members to the class declaration in `network_interface.hh`
 
 template <typename... Targs>
-void DUMMY_CODE(Targs &&... /* unused */) {}
+void DUMMY_CODE(Targs &&.../* unused */) {}
 
 using namespace std;
 
@@ -39,7 +39,7 @@ void NetworkInterface::send_datagram(const InternetDatagram &dgram, const Addres
         ethernetFrame.header().dst = _known_ethernet_address[next_hop_ip].second;
         ethernetFrame.payload() = dgram.serialize();
         _frames_out.push(ethernetFrame);
-        return ;
+        return;
     }
     _queued_sends.emplace_back(dgram, next_hop);
     if (!_is_looking_up.count(next_hop_ip) || _curr_time >= _is_looking_up[next_hop_ip] + 5000) {
@@ -52,7 +52,7 @@ void NetworkInterface::send_datagram(const InternetDatagram &dgram, const Addres
         arpMessage.opcode = ARPMessage::OPCODE_REQUEST;
         arpMessage.sender_ethernet_address = _ethernet_address;
         arpMessage.sender_ip_address = _ip_address.ipv4_numeric();
-        //arpMessage.target_ethernet_address = ETHERNET_BROADCAST;
+        // arpMessage.target_ethernet_address = ETHERNET_BROADCAST;
         arpMessage.target_ip_address = next_hop_ip;
         ethernetFrame.payload() = arpMessage.serialize();
         _frames_out.push(ethernetFrame);
@@ -79,8 +79,10 @@ optional<InternetDatagram> NetworkInterface::recv_frame(const EthernetFrame &fra
         if (result != ParseResult::NoError) {
             return std::nullopt;
         }
-        _known_ethernet_address[arpMessage.sender_ip_address] = make_pair(_curr_time, arpMessage.sender_ethernet_address);
-        if (arpMessage.opcode == ARPMessage::OPCODE_REQUEST && arpMessage.target_ip_address == _ip_address.ipv4_numeric()) {
+        _known_ethernet_address[arpMessage.sender_ip_address] =
+            make_pair(_curr_time, arpMessage.sender_ethernet_address);
+        if (arpMessage.opcode == ARPMessage::OPCODE_REQUEST &&
+            arpMessage.target_ip_address == _ip_address.ipv4_numeric()) {
             EthernetFrame ethernetFrame;
             ethernetFrame.header().type = EthernetHeader::TYPE_ARP;
             ethernetFrame.header().src = _ethernet_address;
@@ -126,7 +128,7 @@ void NetworkInterface::try_send() {
             ethernetFrame.payload() = frame.serialize();
             _frames_out.push(ethernetFrame);
             if (i + 1 != _queued_sends.size()) {
-                std::swap(_queued_sends[i], _queued_sends[_queued_sends.size()-1]);
+                std::swap(_queued_sends[i], _queued_sends[_queued_sends.size() - 1]);
                 _queued_sends.pop_back();
                 i--;
             } else {

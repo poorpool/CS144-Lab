@@ -5,10 +5,10 @@
 #include "tcp_over_ip.hh"
 #include "tun.hh"
 
+#include <map>
 #include <optional>
 #include <queue>
 #include <unordered_set>
-#include <map>
 
 //! \brief A "network interface" that connects IP (the internet layer, or network layer)
 //! with Ethernet (the network access layer, or link layer).
@@ -42,11 +42,11 @@ class NetworkInterface {
     //! outbound queue of Ethernet frames that the NetworkInterface wants sent
     std::queue<EthernetFrame> _frames_out{};
 
-    std::vector<std::pair<InternetDatagram, Address> > _queued_sends{};
+    std::vector<std::pair<InternetDatagram, Address>> _queued_sends{};
 
     std::unordered_map<uint32_t, size_t> _is_looking_up{};
 
-    std::map<uint32_t, std::pair<size_t, EthernetAddress> > _known_ethernet_address{};
+    std::map<uint32_t, std::pair<size_t, EthernetAddress>> _known_ethernet_address{};
 
     size_t _curr_time{0};
 
